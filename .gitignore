@@ -5,6 +5,7 @@
 .DS_Store
 build/
 /captures
+shared/src/commonMain/kotlin/PrivateSecretsDontShare.kt
 .externalNativeBuild
 .cxx
 iosApp/Podfile.lock
