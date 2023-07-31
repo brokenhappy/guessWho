@@ -72,7 +72,7 @@ fun MessageInput(onMessageSend: (String) -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.Default.Send,
-                contentDescription = "Send!"
+                contentDescription = "Send!",
             )
         }
     }
