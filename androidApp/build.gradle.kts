@@ -1,3 +1,5 @@
+import Constants.ktorVersion
+
 plugins {
     kotlin("multiplatform")
     id("com.android.application")
@@ -10,6 +12,7 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(project(":shared"))
+                implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
             }
         }
     }
