@@ -1,3 +1,4 @@
+import Constants.ktorVersion
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -12,6 +13,7 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(project(":shared"))
+                implementation("io.ktor:ktor-client-jetty:$ktorVersion")
             }
         }
     }
