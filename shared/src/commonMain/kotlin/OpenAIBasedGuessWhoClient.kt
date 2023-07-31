@@ -1,9 +1,12 @@
-import com.aallam.openai.api.completion.CompletionRequest
+import com.aallam.openai.api.BetaOpenAI
+import com.aallam.openai.api.chat.ChatCompletionRequest
+import com.aallam.openai.api.chat.ChatMessage
+import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.http.Timeout
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlin.time.Duration.Companion.seconds
 
 private val openAIClient by lazy {
@@ -14,24 +17,31 @@ private val openAIClient by lazy {
 }
 
 class OpenAIBasedGuessWhoClient: GuessWhoClient {
-    override suspend fun startGuessWhoSession(
+    @OptIn(BetaOpenAI::class)
+    override fun startGuessWhoSession(
         name: String,
     ): GuessWhoSession = object: GuessWhoSession {
-        private val completions = openAIClient.completions(
-            CompletionRequest(
-                ModelId("gpt-3.5-turbo"),
-                prompt = """
-                    We are playing Guess Who. You are now $name. Talk and act exactly like you are, 
-                    but do NOT say exactly who you are!
-                """.trimIndent(),
-                maxTokens = 100,
-            )
-        )
-
+        val chatSoFar = mutableListOf<ChatMessage>()
+        var currentChat: StringBuilder? = null
         override suspend fun sendChat(chat: String): ChatStream = object: ChatStream {
+            private val completions = openAIClient.chatCompletions(
+                ChatCompletionRequest(
+                    ModelId("gpt-3.5-turbo"),
+                    messages = chatSoFar.also {
+                        currentChat
+                            ?.also {
+                                currentChat = null
+                                chatSoFar += ChatMessage(ChatRole.User, content = it.toString())
+                            }
+                        chatSoFar += ChatMessage(ChatRole.Assistant, content = chat)
+                    },
+                    maxTokens = 100,
+                )
+            )
             override val response: Flow<String>
-                get() = completions.map { completion ->
-                    completion.choices.first().text
+                get() = completions.mapNotNull { completion ->
+                    completion.choices.first().delta?.content
+                        ?.also { currentChat = (currentChat ?: StringBuilder()).append(it) }
                 }
         }
     }

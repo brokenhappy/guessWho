@@ -1,7 +1,7 @@
 import kotlinx.coroutines.flow.Flow
 
 interface GuessWhoClient {
-    suspend fun startGuessWhoSession(name: String): GuessWhoSession
+    fun startGuessWhoSession(name: String): GuessWhoSession
 }
 
 interface GuessWhoSession {
